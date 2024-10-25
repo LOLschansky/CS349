@@ -265,101 +265,92 @@ def kmeans(train,query,metric):
     if metric != "euclidean" and metric != "cosim":
         Exception("Incorrect metric entered! Please try again.")
         return
-    # If correct metric entered, continue
-    else:
-        # Hard-coded tolerance:
-        max_distance = 110
-        # Current tolerance
-        total_distance = float('inf')
-        # Hard-coded number of classes
-        num_classes = 10
-        # Hard-coded number of attributes
-        num_attributes = 784
+    
+    # Hard-coded tolerance:
+    max_distance = 110
+    # Current tolerance
+    total_distance = float('inf')
+    # Hard-coded number of classes
+    num_classes = 10
+    # Hard-coded number of attributes
+    num_attributes = 784
+    
+    # Step 1: Randomly Select Means
+    
+    # Randomly select means
+    means = [mean[1] for mean in choices(train, k=num_classes)]
+            
+    # Counter for printing
+    ite = 0 
+
+    # net distance of all points to all means
+    net_distance = float('inf')
+   
+    # Continue until convergence
+    while net_distance > max_distance:
         
-        # Step 1: Randomly Select Means
+        # Create classes dictionary to store examples corresponding to each class
+        classes = [[] for _ in range(num_classes)]
         
-        # Randomly select means
-        means = choices(train, k=num_classes)
-        new_means = {}
-        # Iterates over means
-        for idx, mean in enumerate(means):
-            # Adds mean to class 0, 1, 2, ...
-            new_means[str(idx)] = mean
-                
-        # Counter for printing
-        ite = 0 
-                
-        # Continue until convergence
-        while total_distance > max_distance:
-            
-            # Set the old mean to be the new means that were just calculated
-            old_means = deepcopy(new_means)
-            
-            # Create classes dictionary to store examples corresponding to each class
-            classes = {}
-            for idx in range(num_classes):
-                classes[str(idx)] = []
-            
-            # Step 2: Calculate distance to means for every data point
-            
-            # Iterate over all examples in the training data set
-            for example in train:
-                # Get the attribute values for a given example
-                example_attribute_vals = example[1]
-                # Initialize min distance and min mean variables to keep track of shortest distance
-                min_distance = float('inf')
-                min_mean = ""
-                # Iterate over all of the current means to find the closest one to this point
-                for mean in old_means:
-                    # Get the attribute values from the mean
-                    mean_attribute_vals = old_means[mean][1]
-                    # Find the distance between the example and the mean
-                    distance = find_distance(example_attribute_vals, mean_attribute_vals, metric)
-                    if distance < min_distance:
-                        min_mean = mean
-                        min_distance = distance
-                
-                # Step 3: Assign class labels based upon shortest distance
-                classes[str(min_mean)] = classes.get(str(min_mean), []) + [[str(min_mean), example[1]]]
-                
-            # Step 4: Update means
-            
-            # Iterate overall classes in the dictionary to find the mean of each one
-            new_means = {}
-                
-            # Iterate over all of the classes
-            for c in classes:
-                example_attribute_vals = []
-                for example in classes[c]:
-                    example_attribute_vals.append(example[1])
-                # Check if any of the classes don't have a mean
-                if c not in new_means:
-                    new_means[c] = [c, choice(train)[1]]
-                else:
-                    new_means[c] = [c, find_mean(example_attribute_vals)]
-                    
-            # Compare new and old means to determine tolerance
-            total_distance = 0
-            for c in old_means:
-                total_distance += find_distance(old_means[c][1], new_means[c][1], metric)
-            
-            print("Iteration: ", ite)
-            print(total_distance)    
-            ite += 1        
-            # Update current tolerance
-            
-        query_labels = []            
-        for query_point in query:
+        # Step 2: Calculate distance to means for every data point
+        net_distance = 0
+        
+        # Iterate over all examples in the training data set
+        for example in train:
+            # Get the attribute values for a given example
+            example_attribute_vals = example[1]
+            # Initialize min distance and min mean variables to keep track of shortest distance
             min_distance = float('inf')
-            min_mean = ""
-            for mean in new_means:
-                distance = find_distance(query_point[1], new_means[mean][1], metric)
+            min_mean = -1
+
+            # Iterate over all of the current means to find the closest one to this point
+            for idx, mean in enumerate(means):
+
+                # Find the distance between the example and the mean
+                distance = find_distance(example_attribute_vals, mean, metric)
+
                 if distance < min_distance:
-                    min_mean = mean
+                    min_mean = idx
                     min_distance = distance
-            query_labels.append([min_mean, query_point[1]])
             
-        return query_labels
+            net_distance += min_distance
+
+            # Step 3: Assign class labels based upon shortest distance
+            classes[min_mean].append(example[1])
+        
+        # Step 4: Update means
+        
+        # Iterate overall classes in the dictionary to find the mean of each one
+        means = []
+            
+        # Iterate over all of the classes
+        for myclass in classes:
+            print(len(myclass))
+            if len(myclass) == 0:
+                means.append(choices(train, k=1)[0][1])
+            else:
+                means.append(find_mean(myclass))
+
+        print("Iteration: ", ite) 
+        print(net_distance) 
+        input('next')
+        ite += 1        
+        # Update current tolerance
+        
+
+
+    query_labels = []            
+    for query_point in query:
+        min_distance = float('inf')
+        min_mean = ""
+        for mean in new_means:
+            distance = find_distance(query_point[1], new_means[mean][1], metric)
+            if distance < min_distance:
+                min_mean = mean
+                min_distance = distance
+        query_labels.append([min_mean, query_point[1]])
+        
+    return query_labels
             
 ###############################
 # Test K-Means
