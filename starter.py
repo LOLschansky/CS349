@@ -267,9 +267,9 @@ def kmeans(train,query,metric):
         return
     
     # Hard-coded tolerance:
-    max_distance = 110
+    max_distance = 3093179
     # Current tolerance
-    total_distance = float('inf')
+ 
     # Hard-coded number of classes
     num_classes = 10
     # Hard-coded number of attributes
@@ -342,11 +342,11 @@ def kmeans(train,query,metric):
     query_labels = []            
     for query_point in query:
         min_distance = float('inf')
-        min_mean = ""
-        for mean in new_means:
-            distance = find_distance(query_point[1], new_means[mean][1], metric)
+        min_mean = -1
+        for idx, mean in enumerate(means):
+            distance = find_distance(query_point[1], mean, metric)
             if distance < min_distance:
-                min_mean = mean
+                min_mean = idx
                 min_distance = distance
         query_labels.append([min_mean, query_point[1]])
         
@@ -475,8 +475,11 @@ def show(file_name,mode):
         print(' ')
             
 def main():
-    train_dataset = process_data(read_data("mnist_train.csv"))
-    query_dataset = process_data(read_data("mnist_test.csv"))
+    #train_dataset = process_data(read_data("mnist_train.csv"))
+    #query_dataset = process_data(read_data("mnist_test.csv"))
+
+    train_dataset = read_data("mnist_train.csv")
+    query_dataset = read_data("mnist_test.csv")
     # test(train_dataset, query_dataset)
     # print(find_mean([[0,0,1], [1,0,0]]))
     test_kmeans(train_dataset, query_dataset)
