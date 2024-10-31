@@ -267,11 +267,11 @@ def kmeans(train,query,metric):
         return
     
     # Hard-coded tolerance:
-    max_distance = 3093179
+    max_distance = 2880000
     # Current tolerance
  
     # Hard-coded number of classes
-    num_classes = 10
+    num_classes = 80
     # Hard-coded number of attributes
     num_attributes = 784
     
@@ -333,65 +333,39 @@ def kmeans(train,query,metric):
 
         print("Iteration: ", ite) 
         print(net_distance) 
-        input('next')
+        # input('next')
         ite += 1        
         # Update current tolerance
         
-
-
-    query_labels = []            
-    for query_point in query:
-        min_distance = float('inf')
-        min_mean = -1
-        for idx, mean in enumerate(means):
-            distance = find_distance(query_point[1], mean, metric)
-            if distance < min_distance:
-                min_mean = idx
-                min_distance = distance
-        query_labels.append([min_mean, query_point[1]])
-        
-    return query_labels
+    # Currently, means is a list of the k means (which are each lists with 784 integer values)
+    # We want to assign these means to a given category using KNN
+    means_with_initial_labels = []
+    for idx, mean in enumerate(means):
+        means_with_initial_labels.append([idx, mean])
+    
+    # Find the means with the correct labels using K-Nearest Neighbors
+    means_with_correct_labels = knn(train, means_with_initial_labels, metric)
+    
+    # Iterate through each query point and label them according to the means
+    querys_with_correct_labels = knn(means_with_correct_labels, query, metric)
+    
+    return querys_with_correct_labels
             
+
 ###############################
-# Test K-Means
+# Test
 ###############################
-def test_kmeans(train_dataset, query_dataset):
+def test(train_dataset, query_dataset, neighbors=True):
     '''
     Take in a query dataset (format in read_data) and the labeled query dataset
     (returned from knn function). Returns accuracy as a float.
     Also prints out 10x10 confusion matrix.
     '''
     confusion_matrix = [[0 for _ in range(10)] for _ in range(10)]
-    query_labels = kmeans(train_dataset, query_dataset, "euclidean")
-    correct = 0
-    for idx, query in enumerate(query_labels):
-        # Add to confusion matrix
-        confusion_matrix[int(query_dataset[idx][0])][int(query[0])] += 1
-        # Check if correct
-        if query[0] == query_dataset[idx][0]:
-            correct += 1
-            print("Correct! Current Accuracy: ", correct / (idx + 1))
-        else:
-            print("Incorrect! Current Accuracy: ", correct / (idx + 1))
-    # Calculate overall accuracy
-    accuracy = correct / len(query_dataset)
-    print("Total Accuracy: ", accuracy)
-    print("Confusion Matrix:")
-    for idx in range(10):
-        print(idx, ": ", confusion_matrix[idx])                   
-
-
-###############################
-# Test KNN
-###############################
-def test_knn(train_dataset, query_dataset):
-    '''
-    Take in a query dataset (format in read_data) and the labeled query dataset
-    (returned from knn function). Returns accuracy as a float.
-    Also prints out 10x10 confusion matrix.
-    '''
-    confusion_matrix = [[0 for _ in range(10)] for _ in range(10)]
-    query_labels = knn(train_dataset, query_dataset, "euclidean")
+    if neighbors:
+        query_labels = knn(train_dataset, query_dataset, "euclidean")
+    else:
+        query_labels = kmeans(train_dataset, query_dataset, "euclidean")
     correct = 0
     for idx, query in enumerate(query_labels):
         # Add to confusion matrix
@@ -479,10 +453,12 @@ def main():
     #query_dataset = process_data(read_data("mnist_test.csv"))
 
     train_dataset = read_data("mnist_train.csv")
+    # validation_dataset = read_data("mnist_valid.csv")
     query_dataset = read_data("mnist_test.csv")
-    # test(train_dataset, query_dataset)
-    # print(find_mean([[0,0,1], [1,0,0]]))
-    test_kmeans(train_dataset, query_dataset)
+    # # test(train_dataset, query_dataset)
+    # # print(find_mean([[0,0,1], [1,0,0]]))
+    # new_query_dataset = kmeans(train_dataset, validation_dataset, "euclidean")
+    test(train_dataset, query_dataset, neighbors=False)
     
 if __name__ == "__main__":
     main()
