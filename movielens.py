@@ -89,7 +89,7 @@ def movielens_recommender(query_user, all_users, metric, max_movies):
                     distances.append((distance, user))
                     
             # Implement KNN
-            k = 1
+            k = 10
             k_nearest_cnt = 0
             k_nearest = ""
             k_nearest_neighbors = {}
@@ -121,7 +121,7 @@ def movielens_recommender(query_user, all_users, metric, max_movies):
         # Using k_nearest, which is the user_id of the closest neighbor to the query user,
         #   find the M highest rated movies that the query user has not yet watched
         # Hyper-parameter of number of movies to recommend
-        m = 3
+        m = 20
         nearest_user_reviews = all_users[nearest_user].reviews
         # Add user reviews to sorted list
         nearest_user_reviews_list = sorted(nearest_user_reviews.values(), key=lambda x: int(x.rating))
@@ -138,8 +138,35 @@ def movielens_recommender(query_user, all_users, metric, max_movies):
             
         return recommendations
 
+###############################
+# MovieLens Accuracy
+###############################   
+def movielens_accuracy(recommendations, query_user):
+    #iterate through the query_user data set and only include examples where recommendations overlap
+    for query in query_user:
+        query_reviews = query_user[query].reviews
+        tp = 0
+        fp = 0
+        fn = 0
+        for movie_id in recommendations:
+            if movie_id in query_reviews:
+                rating = query_reviews[movie_id].rating
+                #true positive means > 3
+                if rating > 3:
+                    tp +=1 
+                else:
+                    fp +=1
+                #if greater than 3, add to TP, else add to FP
+        precision = tp/(tp + fp)
+        #recall = tp / (tp + fn)
+        #f1 = 2*(precision * recall) / (precision + recall)
+        
+    return precision
+
 if __name__ == "__main__":
     all_users, max_movie_id = movielens_parse(input_file="movielens.txt")
     one_user, _ = movielens_parse(input_file="test_a.txt")
     recommendations = movielens_recommender(one_user, all_users, "euclidean", max_movie_id)
+    #precision = movielens_accuracy(recommendations, one_user)
     print(recommendations)
+    #print(precision)

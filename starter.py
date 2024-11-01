@@ -214,7 +214,7 @@ def knn(train, query, metric):
                 distances.append((distance, example_label))
             
             # Implement knn, but for now we are just doing k = 1
-            k = 10
+            k = 3
             k_nearest_cnt = 0
             k_nearest = ""
             k_nearest_neighbors = {}
@@ -449,8 +449,8 @@ def show(file_name,mode):
         print(' ')
             
 def main():
-    #train_dataset = process_data(read_data("mnist_train.csv"))
-    #query_dataset = process_data(read_data("mnist_test.csv"))
+    train_dataset = process_data(read_data("mnist_train.csv"))
+    query_dataset = process_data(read_data("mnist_test.csv"))
 
     train_dataset = read_data("mnist_train.csv")
     # validation_dataset = read_data("mnist_valid.csv")
