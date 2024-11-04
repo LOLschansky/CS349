@@ -162,11 +162,17 @@ def movielens_recommender_improved(query_user, all_users, metric, max_movies, re
         o = 30
         # Gender hyper-parameter
         g = 1
+        # Top genres multiplier hyper-parameter (Multiplier and Number of Top Genres)
+        #   The values in the list are the multipliers, and the length of list is the number
+        #   of top genres to consider
+        t = [10, 5, 2]
         
         # Create dictionary to map each occupation to an index. For example, marketing : 0, executive : 1, etc.
         occupations_loc = {value: index for index, value in enumerate(occupations)}
-        # Create dictionary to map each occupation to an index. For example, M : 0, F : 1, etc.
+        # Create dictionary to map each gender to an index. For example, M : 0, F : 1, etc.
         genders_loc = {value: index for index, value in enumerate(genders)}
+        # Create dictionary to map each genre to an index. For example, Film-Noir : 0, Drama : 1, etc.
+        genre_loc = {value: index for index, value in enumerate(genres)}
         
         # Iterate over all query reviews (should only be one user)
         for query in query_user:
@@ -180,11 +186,14 @@ def movielens_recommender_improved(query_user, all_users, metric, max_movies, re
                 query_reviews[int(review)] = query_data.reviews[review].rating
             # Add a user's age to the list for comparison
             query_reviews.append(query_data.age)
+            # Add a user's occupation to the list for comparison
+            query_reviews += [0 if idx != occupations_loc[query_data.occupation] else o for idx in range(len(occupations))]
             # Add a user's gender to the list for comparison
-            query_reviews += [0 if idx != occupations_loc[query_user[query].occupation] else o for idx in range(len(occupations))]
-            # Add a user's gender to the list for comparison
-            query_reviews += [0 if idx != genders_loc[query_user[query].gender] else g for idx in range(len(genders))]            
-                        
+            query_reviews += [0 if idx != genders_loc[query_data.gender] else g for idx in range(len(genders))]
+            # Add a user's top genres to the list for comparison
+            top_genres = append_top_genres(genres, query_data, genre_loc, t)
+            query_reviews += [0 if idx not in top_genres else t[top_genres.index(idx)] for idx in range(len(genres))]
+                                   
             print("Current query: ", query)
             # Initialize list to store distances
             distances = [] 
@@ -207,7 +216,10 @@ def movielens_recommender_improved(query_user, all_users, metric, max_movies, re
                     # Add a user's gender to the list for comparison
                     user_reviews += [0 if idx != occupations_loc[user_data.occupation] else o for idx in range(len(occupations))]
                     # Add a user's gender to the list for comparison
-                    user_reviews += [0 if idx != genders_loc[user_data.gender] else g for idx in range(len(genders))]            
+                    user_reviews += [0 if idx != genders_loc[user_data.gender] else g for idx in range(len(genders))]    
+                    # Add a user's top genres to the list for comparison
+                    top_genres = append_top_genres(genres, user_data, genre_loc, t)
+                    user_reviews += [0 if idx not in top_genres else t[top_genres.index(idx)] for idx in range(len(genres))]
                     
                     # Find distance between query user and user from training set
                     distance = find_distance(query_reviews, user_reviews, metric)
@@ -268,6 +280,24 @@ def movielens_recommender_improved(query_user, all_users, metric, max_movies, re
                         recommendations.append(rec)
                             
         return recommendations
+    
+def append_top_genres(genres, query_data, genre_loc, t):
+    
+    # Initialize dictionary to keep track of number of reviews per genre and sum of reviews per genre
+    #   Each tuple is the sum of reviews and number of reviews.
+    genre_tracker = {key: (0, 0) for key in genres}
+    for review in query_data.reviews.items():
+        genre_tracker[review[1].genre] = (genre_tracker[review[1].genre][0] + int(review[1].rating), genre_tracker[review[1].genre][1] + 1)
+    # Determine top genres for the query_user
+    avg_genres = {}
+    for genre in genre_tracker:
+        if genre_tracker[genre][1] == 0:
+            avg_genres[genre] = 0
+        else:
+            avg_genres[genre] = genre_tracker[genre][0] / genre_tracker[genre][1]
+            
+    # Extracts top genres and puts them into a list
+    return [genre_loc[key] for key, value in sorted(avg_genres.items(), key=lambda value: value[1], reverse=True)[:len(t)]]
 
 ###############################
 # MovieLens Accuracy
@@ -297,9 +327,9 @@ def movielens_accuracy(recommendations, query_user):
 
 if __name__ == "__main__":
     all_users, max_movie_id, all_genres, all_genders, all_occupations = movielens_parse(input_file="movielens.txt")
-    # print(all_genres)
-    # print(all_genders)
-    # print(all_occupations)
+    print(all_genres)
+    print(all_genders)
+    print(all_occupations)
     # input()
     one_user, _, _, _, _ = movielens_parse(input_file="train_a.txt")
     #test_accuracy is a boolean. True: we can recommend movies a user has seen, False: we can't
