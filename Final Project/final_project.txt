@@ -1,0 +1,58 @@
+Task: Our task was create a machine learning model that could predict an NFL draft prospect's draft standing based on their combine results alone using K-Nearest Neighbors. 
+Results Analysis: 
+- We were able to predict players' draft rounds relatively accurately (80%) within 3 rounds - however, this doesn't really do much, given that there are only 7 rounds in the NFL draft. 
+- We tried optimizing different hyperparameters, such as scalars for different attributes like player position, height/weight, and more, but ultimately it simply appears that an NFL player's combine results simply aren't closely correlated to their draft position. 
+- Even examining players that were not drafted, our model had difficulty predicting whether or not a player would get drafted, and often incorrectly assumed that a player would go undrafted.
+- In adjacent rounds, players are often frequently misclassified - for example, players who were drafted in the 4th round were predicted to 
+have been drafted in the 3rd or 5th rounds.
+- Round 7 has the highest number of correct predictions, around 30.8%. This could potentially mean that at later stages in the draft, combine
+results matter more.
+- Round 6 has the lowest number of correct predictions, which completely disagrees with the statement in the previous comment.
+
+Draft Round: 0
+Precision: 0.2631578947368421
+Recall: 0.11904761904761904
+F1: 11.5672131147541
+Draft Round: 1
+Precision: 0.1388888888888889
+Recall: 0.13157894736842105
+F1: 7.805405405405405
+Draft Round: 2
+Precision: 0.08333333333333333
+Recall: 0.10869565217391304
+F1: 7.9849056603773585
+Draft Round: 3
+Precision: 0.22727272727272727
+Recall: 0.19230769230769232
+F1: 5.633333333333333
+Draft Round: 4
+Precision: 0.175
+Recall: 0.18421052631578946
+F1: 5.28937728937729
+Draft Round: 5
+Precision: 0.10526315789473684
+Recall: 0.0625
+F1: 20.07843137254902
+Draft Round: 6
+Precision: 0.14545454545454545
+Recall: 0.32
+F1: 1.953125
+Draft Round: 7
+Precision: 0
+Recall: 0
+F1: 0
+
+When only considering players that got drafted:
+Total Accuracy (Exactly correct):           0.154
+Total Accuracy (Correct within 1 round):    0.425
+Total Accuracy (Correct within 2 rounds):   0.630
+Total Accuracy (Correct within 3 rounds):   0.795
+Total Accuracy (Correct within 4 rounds):   0.915
+Confusion Matrix:
+1 :  [5,  2, 12,  4,  7,  2, 10]
+2 :  [2,  5,  9,  7,  6,  2,  7]
+3 :  [3,  8,  5,  8,  4,  6, 12]
+4 :  [6,  8, 12, 10, 10,  2,  4]
+5 :  [2,  6,  6,  7,  7,  3,  7]
+6 :  [0,  4, 10,  5,  4,  2,  7]
+7 :  [1,  3,  6,  3,  2,  2,  8]
