@@ -152,7 +152,7 @@ def main():
     # Process data to convert it to numerical values and normalize
     processed_data = process_data_knn(data)
     # Split dataset up into training, validation, and testing sets
-    train_set, valid_set, test_set = split_data_knn(processed_data, test=False)
+    train_set, valid_set, test_set = split_data_knn(processed_data, test=True)
     test_knn(train_set, test_set, error=0)
     
 """

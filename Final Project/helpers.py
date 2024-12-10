@@ -303,7 +303,7 @@ def process_data_knn(data_set):
         positions_list = [0] * len(positions_set)
         # Set the position for the given player
         positions_list[positions_dict[example[1][0]]] = 5
-        height = process_height(example)
+        height = process_height(example[1][1])
         if height != -1:
             # Normalize the height
             height = (height - height_min) / (height_max - height_min)
@@ -373,8 +373,8 @@ def split_data_knn(data, test=False):
         valid_size = 1
         test_size = len(data) - train_size - valid_size
     else:
-        train_size = len(data) // 3
-        valid_size = len(data) // 3
+        train_size = int(len(data) // 1.35)
+        valid_size = int(len(data) // 6)
         test_size = len(data) - train_size - valid_size
     
     # Randomized list of data

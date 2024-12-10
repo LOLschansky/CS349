@@ -379,9 +379,12 @@ if __name__ == "__main__":
         # plot the train loss and test loss against the number of epochs in seperate graphs
         plot_training_and_validation_loss(train_loss, test_loss)
 
-        # x_vals, targets, _ = read_data_ffnn('data/nfl_combine_2010_to_2023.csv', False, undrafted_round)
-        # features = np.array([inner_list[1:] for inner_list in x_vals])
+        # x_vals, targets, _ = read_data_ffnn('data/nfl_combine_2010_to_2023.csv', include_undrafted, undrafted_round, round_specific)
 
+        # features = np.array([inner_list[1:] for inner_list in x_vals])
+        # print(x_vals)
+        # print(targets)
+        # print(features)
         # plot_decision_regions(features, targets, model)
 
         input("Press enter to continue")
