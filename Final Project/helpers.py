@@ -1,6 +1,103 @@
 import csv
 import math
 from random import sample
+import numpy as np
+import torch
+import matplotlib.pyplot as plt
+import matplotlib
+
+################################################################################
+# Some simple plotting utilities
+################################################################################
+
+def compute_bounds(features):
+    min1, max1 = features[:, 0].min() - 1, features[:, 0].max() + 1
+    min2, max2 = features[:, 1].min() - 1, features[:, 1].max() + 1
+    return (min1, max1, min2, max2)
+
+
+def plot_decision_regions(features,
+                          targets,
+                          model,
+                          axis=None,
+                          transform=None,
+                          bounds=None,
+                          title='Decision Surface'):
+    """
+    Slightly different plotting approach than above. Used in backprop demo.
+
+    This function produces a single plot containing a scatter plot of the
+    features, targets, and decision region of the model.
+
+    Args:
+        features (np.ndarray): 2D array containing real-valued inputs.
+        targets (np.ndarray): 1D array containing binary targets.
+        model: a learner with .predict() method
+        axis: the axis on which to plot. If None, create a new plot
+        title: title of the plot
+    Returns:
+        None (plots to the active figure)
+    """
+
+    # define bounds of the domain
+    if bounds is None:
+        min1, max1, min2, max2 = compute_bounds(features)
+    else:
+        min1, max1, min2, max2 = bounds
+
+    # define grid for visualizing decision regions
+    x1grid = np.arange(min1, max1, 0.1)
+    x2grid = np.arange(min2, max2, 0.1)
+
+    xx, yy = np.meshgrid(x1grid, x2grid)
+
+    # flatten grid to a vector
+    r1, r2 = xx.flatten(), yy.flatten()
+    r1, r2 = r1.reshape((len(r1), 1)), r2.reshape((len(r2), 1))
+
+    # horizontally stack vectors to create x1,x2 input for the model
+    grid = np.hstack((r1, r2))
+
+    # if we're transforming the features, do that now
+    #     this allows xx and yy to still be in 2D for the visualization
+    #     but grid has been transformed so it matches up with the fit model
+    if transform is not None:
+        grid = transform(grid)
+
+    grid = np.insert(grid, 0, 1.0, axis=1)
+
+    # generate predictions over grid
+    yhat = model(torch.from_numpy(grid).float()).detach().numpy()
+
+    pred = np.argmax(yhat, axis=1)
+
+    # reshape the predictions back into a grid
+    zz = pred.reshape(xx.shape)
+
+    if axis is None:
+        fig, axis = plt.subplots()
+
+    # plot the grid of x, y and z values as a surface
+    binary_cmap = matplotlib.colors.ListedColormap(['#9ce8ff', '#ffc773'])
+    axis.contourf(xx, yy, zz, cmap=binary_cmap, alpha=0.7)
+
+    # plot "negative" class:
+    row_idx_neg = np.where(targets < 0.5)[0]
+    axis.scatter(features[row_idx_neg, 0],
+                 features[row_idx_neg, 1],
+                 label='negative')
+
+    # plot "positive" class:
+    row_idx_pos = np.where(targets > 0.5)[0]
+    axis.scatter(features[row_idx_pos, 0],
+                 features[row_idx_pos, 1],
+                 label='positive')
+
+    axis.set_title(title)
+    axis.set_xlim(min1, max1)
+    axis.set_ylim(min2, max2)
+
+    axis.legend(loc="upper left")
 
 ###############################
 # Find distance
@@ -136,7 +233,7 @@ def hamming(a, b):
 # Process Height
 ###############################
 def process_height(example):
-    height_list = example[1][1].split('-')
+    height_list = example.split('-')
     if len(height_list) == 1:
         height = -1
     else:
@@ -157,7 +254,7 @@ def process_attribute(value):
 ###############################
 # Process Data
 ###############################
-def process_data(data_set):
+def process_data_knn(data_set):
     '''
     Takes in a data set returned from read_data, and turns each attribute into an integer
     value in order to use K-Nearest Neighbors. For the position, each position is placed into
@@ -172,7 +269,7 @@ def process_data(data_set):
     # Iterate over all data
     for example in data_set:
         positions_set.add(example[1][0])
-        height_list.append(process_height(example))
+        height_list.append(process_height(example[1][1]))
         weight_list.append(process_attribute(example[1][2]))
         yd40_list.append(process_attribute(example[1][3]))
         vertical_list.append(process_attribute(example[1][4]))
@@ -238,7 +335,7 @@ def process_data(data_set):
 ###############################
 # Read Data
 ###############################
-def read_combine_data(file_name, include_undrafted=True):
+def read_data_knn(file_name, include_undrafted=True):
     '''
     Takes in a name for an NFL combine csv file as a string, and returns a list of examples, 
     where each example is a list of length 2, with the first index being the draft 
@@ -262,11 +359,11 @@ def read_combine_data(file_name, include_undrafted=True):
     return(data_set)
 
 ################################
-# Split Data
+# Split Data KNN
 ################################
-def split_data(data, test=False):
+def split_data_knn(data, test=False):
     '''
-    Takes in data from read_combine_data and returns three datasets: a training set,
+    Takes in data from read_data_knn and returns three datasets: a training set,
     validation set, and a test set. The size of each set is selected by hyperparameters.
     '''
     
@@ -349,8 +446,8 @@ if __name__ == "__main__":
     #                     [10, 3, 15, 3, 6, 7, 1, 108]]
     metrics(confusion_matrix)
     accuracy(confusion_matrix)
-    # data = read_combine_data("data/nfl_combine_2010_to_2023.csv")
-    # processed_data = process_data(data)
-    # train_set, valid_set, test_set = split_data(processed_data)
+    # data = read_data_knn("data/nfl_combine_2010_to_2023.csv")
+    # processed_data = process_data_knn(data)
+    # train_set, valid_set, test_set = split_data_knn(processed_data)
     
     
