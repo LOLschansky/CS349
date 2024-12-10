@@ -1,5 +1,5 @@
 from random import choice
-from helpers import find_distance, process_data_knn, read_data_knn, split_data_knn
+from helpers import find_distance, process_data, read_combine_data, split_data_knn
 import copy
 
 ###############################
@@ -7,8 +7,8 @@ import copy
 ###############################
 def knn(train, query, metric):
     '''
-    Takes in a training dataset as a list of examples (format in read_data_knn), a query dataset, which is also
-    a list of examples (format in read_data_knn), as well as a metric, return a list of labels for the query
+    Takes in a training dataset as a list of examples (format in read_combine_data), a query dataset, which is also
+    a list of examples (format in read_combine_data), as well as a metric, return a list of labels for the query
     dataset.
     '''
     
@@ -86,7 +86,7 @@ def knn(train, query, metric):
 ###############################
 def test_knn(train_dataset, query_dataset, error=0):
     '''
-    Take in a query dataset (format in read_data_knn) and a query dataset.
+    Take in a query dataset (format in read_combine_data) and a query dataset.
     Returns accuracy as a float. Also prints out 10x10 confusion matrix.
     '''
     confusion_matrix = [[0 for _ in range(9)] for _ in range(9)]
@@ -148,9 +148,9 @@ def knn_accuracy(recommendations, query_user):
             
 def main():
     # Get data from CSV file
-    data = read_data_knn("data/nfl_combine_2010_to_2023.csv", include_undrafted=True)
+    data = read_combine_data("data/nfl_combine_2010_to_2023.csv", include_undrafted=True)
     # Process data to convert it to numerical values and normalize
-    processed_data = process_data_knn(data)
+    processed_data = process_data(data)
     # Split dataset up into training, validation, and testing sets
     train_set, valid_set, test_set = split_data_knn(processed_data, test=True)
     test_knn(train_set, test_set, error=0)
