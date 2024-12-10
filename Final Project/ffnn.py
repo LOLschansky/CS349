@@ -257,29 +257,31 @@ def test(model, data_loader, loss_function):
 
 
 # output the final accuracy of the model
-def final_accuracy(model, data_loader):
+def final_accuracy(model, data_loader, output_size):
 
     correct_predictions = 0
     total_predictions = 0
+    
+    confusion_matrix = [[0 for _ in range(output_size)] for _ in range(output_size)]
 
     with torch.no_grad():
         for X, y in data_loader:   
             pred = model(X)
             pred = torch.round(pred)
             pred_label = np.argmax(pred.numpy(), axis=1).astype(float)
-            # y_label = y.squeeze().numpy()
+            
             if y.numel() == 1:
                 y_label = np.array([y.item()])
             else:
                 y_label = y.squeeze().numpy()
-            print(y_label)
-            print(y_label.shape)
-            print(pred_label)
-            print(pred_label.shape)
             for idx, _ in enumerate(pred_label):
                 total_predictions += 1
                 correct_predictions += (pred_label[idx] == y_label[idx])
-
+                confusion_matrix[pred_label[idx].astype(int)][y_label[idx].astype(int)]  += 1
+                
+    print("Confusion Matrix:")
+    for idx in range(output_size):
+        print(idx, ": ", confusion_matrix[idx])
     return correct_predictions / total_predictions
 
 
@@ -374,10 +376,10 @@ if __name__ == "__main__":
 
         # show the final accuracy of the model
         print('Final accuracy on test set (k = %i): %.2f' %
-              (hidden_size, final_accuracy(model, test_loader)))
+              (hidden_size, final_accuracy(model, test_loader, output_size)))
 
         # plot the train loss and test loss against the number of epochs in seperate graphs
-        plot_training_and_validation_loss(train_loss, test_loss)
+        # plot_training_and_validation_loss(train_loss, test_loss)
 
         # x_vals, targets, _ = read_data_ffnn('data/nfl_combine_2010_to_2023.csv', include_undrafted, undrafted_round, round_specific)
 

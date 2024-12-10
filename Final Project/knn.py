@@ -148,7 +148,7 @@ def knn_accuracy(recommendations, query_user):
             
 def main():
     # Get data from CSV file
-    data = read_combine_data("data/nfl_combine_2010_to_2023.csv", include_undrafted=True)
+    data = read_combine_data("data/nfl_combine_2010_to_2023.csv", include_undrafted=False)
     # Process data to convert it to numerical values and normalize
     processed_data = process_data(data)
     # Split dataset up into training, validation, and testing sets
